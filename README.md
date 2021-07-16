@@ -1,70 +1,229 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Description
 
-## Available Scripts
+The project aims to build a sub module of the internal CRM, called "Capability Development System". It provides below major features for the employees and the managers to define the career paths and the related training plans.
+  
+## Architecture Overview
+  
+  ![alt text](./images/architecture.png)
+  
+## Requirements
+* JDK 11(AdoptOpenJDK LTS)
+* Node.js 
+* npm 
+* Maven
+* Consul 
+* RabbitMQ 
+* Docker
 
-In the project directory, you can run:
+    **Notes on setting up Maven**:
+    Add the bin folder inside extracted folder to your user PATH environment variable (How to add: https://www.imatest.com/docs/editing-system-environment-variables/#Windows)
 
-### `npm start`
+## Development Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Back-end
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. You need a PostGreSQL server running. Install and run PostGreSQL according to your OS with username=postgres, password=Abcd1234, database=postgres
+   
+   - Install and start postgres server on Windows:
+     - Download postgres binary from https://www.enterprisedb.com/download-postgresql-binaries, extract and navigate to its bin folder:
+       
+       ```bash
+         cd pgsql\bin
+       ```
+     - initialize database with password Abcd1234 (only needed for first time configuration after download)
+       
+       ```bash
+         initdb -D ..\pgdata -U postgres -W -E UTF8 -A scram-sha-256
+       ```
+     - start database (needed everytime to start project)  
+       
+       ```bash
+         pg_ctl -D ..\pgdata -l logfile start
+       ```
+   - Install and start postgres  for other operating system:
+     - https://www.postgresql.org/download/
 
-### `npm test`
+2. You also need Consul up and running (in development mode). 
+   
+   - Install and start postgres server on windows:
+     - Download postgres binary from https://www.consul.io/downloads and extract it
+     - Navigate to extracted folder and start consul using following command:
+       
+       ```bash
+         consul agent -node=cdo-consul -dev -client 0.0.0.0
+       ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. Start the Gateway service (spring boot project)
+   
+   - Download source: http://tfs.logigear.com/MWD/_git/CDO
+     
+     ```bash
+       cd gateway
+     ```
+   - Run project either SpringToolSuite4 or command as following
+      - for Windows (if commands could not run, see Notes* below):
+     ```bash
+       mvnw spring-boot:run
+     ```
+      - for other operating system:
+     ```bash
+       ./mvnw spring-boot:run
+     ```
 
-### `npm run build`
+4. Start the crm-certification-service service (spring boot project)
+   
+   - Download source: http://tfs.logigear.com/MWD/_git/CDO
+     
+     ```bash
+       cd crm-certification-service
+     ```
+   - Run project either SpringToolSuite4 or command as following
+     
+     ```bash
+       ./mvnw spring-boot:run
+     ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+5. Start the crm-employees-service service (spring boot project)
+   
+   - Download source: http://tfs.logigear.com/MWD/_git/CDO
+     
+     ```bash
+       cd crm-employees-service
+     ```
+   - Run project either SpringToolSuite4 or command as following
+     
+     ```bash
+       ./mvnw spring-boot:run
+     ```
+     
+     **Notes***
+     
+     If ./mvnw spring-boot:run could not run, please install mvn wrapper:
+     
+     ```bash
+     cdo-aas$ mvn -N io.takari:maven:wrapper
+     ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Front-end
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Front-end is a webserver run at port 4200
 
-### `npm run eject`
+1. The Angular application can be started with npm. First, you need to download the dependencies with:
+   
+   ```bash
+    crm-app-client$ npm install
+   ```
+2. Then, you start the server with:
+   
+   ```bash
+    crm-app-client$ npm start
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Manual Deployment
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Back-end
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+1. You need a PostGreSQL server running. Install and run PostGreSQL according to your OS with username=postgres, password=Abcd1234, database=postgres
+    Note: If you want to access PostGreSQL from outsite loclahost, edit pg_hba.conf in the installed folder and edit following line:
+   
+   ```
+    # IPv4 local connections:
+    host    all             all             all
+   ```
+   
+    Install postgres server on windows:
+   
+        - Download postgres binary from https://www.enterprisedb.com/download-postgresql-binaries and extract it
+        - cd pgsql\bin
+        - initialize database: initdb -D ..\pgdata -U postgres -W -E UTF8 -A scram-sha-256 then enter password Abcd1234 (username is postgres)
+        - start database:  pg_ctl -D ..\pgdata -l logfile start
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+2. You also need Consul up and running (in development mode). Follow the instructions for your OS, for example:
+   
+   ```bash
+    $ consul agent -node=cdo-consul -dev -client 0.0.0.0
+   ```
+   
+    Then edit the rabbitMQ address in global_config.json and import global configuration setting as following:
+   
+   ```bash
+    $ consul kv import @global_config.json
+   ```
+   
+    Go to Consul web management at  http://localhost:8500 and edit rabbitMQ and PostGreSQL address then save it
+    
+    ![alt text](./images/consulKVConfiguration.png)
 
-## Learn More
+3. You need a RabbitMQ server running. Run the server according to the instructions for your OS, for example:
+   
+   ```bash
+    $ rabbitmq-server
+   ```
+   
+    Open to rabbitMQ web manager at http://localhost:15672/, login with default user 'gues't (password: 'guest'). Create user 'hung' with password 'hung' as following:
+    
+    ![alt text](./images/rabbitMQCreateUser.png)
+    
+    If you want to access your rabbitMQ server outside localhost, double click on created user and add permission for this user:
+    
+    ![alt text](./images/rabbitMQAddRemotePermission.png)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+4. To start the Authentication&Authorization microservice, you must edit Consul configuration in application.yml 
+    
+    ![alt text](./images/consulConfiguration.png)
+   
+   Then  use the command line with the included Maven wrapper:
+   
+   ```bash
+    cdo-aas$ ./mvnw spring-boot:run
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. To start the Employee microservice, you must edit Consul configuration in application.yml as in step 4 and run the command line with the included Maven wrapper:
+   
+   ```bash
+    cdo-employee$ ./mvnw spring-boot:run
+   ```
 
-### Code Splitting
+6. To start the Gateway microservice, you must edit Consul configuration in application.yml as in step 4 and run the command line with the included Maven wrapper:
+   
+   ```bash
+    gateway ./mvnw spring-boot:run
+   ```
+   *Notes*
+   If ./mvnw spring-boot:run could not run, please install mvn wrapper:
+   
+   ```bash
+    cdo-aas$ mvn -N io.takari:maven:wrapper
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Front-end
+Front-end is a webserver run at port 4200
+1. The Angular application can be started with npm. First, you need to download the dependencies with:
+   
+   ```bash
+    crm-app-client$ npm install
+   ```
+2. Then, you start the server with:
+   
+   ```bash
+    crm-app-client$ npm start
+   ```
 
-### Analyzing the Bundle Size
+## Deployment with Docker
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Install Docker Desktop
+	+ Windows: [Install Docker Desktop ](https://docs.docker.com/docker-for-windows/install/)
+	+ macOS:  [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2. Change directory from root project  to docker folder:
+   
+   ```bash
+   cd docker
+   ```
+3. Builds, (re)creates, starts, and attaches to containers for a service
+   
+   ```bash
+   docker-compose up -d
+   ```
+4. Run importDB.bat to create database
