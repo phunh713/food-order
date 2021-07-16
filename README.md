@@ -44,6 +44,7 @@ The project aims to build a sub module of the internal CRM, called "Capability D
    - Install and start postgres  for other operating system:
      - https://www.postgresql.org/download/
 
+
 2. You also need Consul up and running (in development mode). 
    
    - Install and start postgres server on windows:
@@ -53,6 +54,7 @@ The project aims to build a sub module of the internal CRM, called "Capability D
        ```bash
          consul agent -node=cdo-consul -dev -client 0.0.0.0
        ```
+
 
 3. Start the Gateway service (spring boot project)
    
@@ -71,6 +73,7 @@ The project aims to build a sub module of the internal CRM, called "Capability D
        ./mvnw spring-boot:run
      ```
 
+
 4. Start the crm-certification-service service (spring boot project)
    
    - Download source: http://tfs.logigear.com/MWD/_git/CDO
@@ -83,6 +86,7 @@ The project aims to build a sub module of the internal CRM, called "Capability D
      ```bash
        ./mvnw spring-boot:run
      ```
+
 
 5. Start the crm-employees-service service (spring boot project)
    
